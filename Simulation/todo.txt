@@ -1,0 +1,3 @@
+# Verificar de forma consistente se a movimentação dos pontos funciona bem
+
+# Adicionar readme
