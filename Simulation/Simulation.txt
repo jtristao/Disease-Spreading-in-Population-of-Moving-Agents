@@ -1,0 +1,13 @@
+What do I want with the simulation:
+	- Number of individuals infected over time
+	- Distance matrix
+
+
+While there are infected points:
+	- Gather information:
+		- Count the infected
+		- Update static distance matrix
+	
+	- Move
+	- Update infected
+	- Update recovered
