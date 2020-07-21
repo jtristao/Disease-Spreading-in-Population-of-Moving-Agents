@@ -16,3 +16,5 @@
 --------------------------------------------------------------------------------
 
 # Implementar utilizando matriz de adjacência
+
+# Achar erro na hora de movimentar
