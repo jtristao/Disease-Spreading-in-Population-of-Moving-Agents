@@ -1,20 +1,10 @@
-# Verificar de forma consistente se a movimentação dos pontos funciona bem -> Done
+TODO:
+	# Matrix de adjacencia
 
-# Gerar video
-# Ajustar plot:	Pontos menores
+	# Validar
 
-# Retornar infectados x tempo
-# Plotar
+	# Adicionar readme
 
-# Adicionar readme
+DONE:
 
-# Otimizar:
-	- rever código
-	- paralelizar
-	- escrever em c++
-
---------------------------------------------------------------------------------
-
-# Implementar utilizando matriz de adjacência
-
-# Achar erro na hora de movimentar
+	# Adidionar video
