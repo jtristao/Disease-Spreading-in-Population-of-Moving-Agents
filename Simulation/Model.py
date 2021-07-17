@@ -2,6 +2,7 @@ import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import networkx as nx
 
 def random_coordinate(dim):
 	return [rd.uniform(0, dim), rd.uniform(0, dim)]
@@ -36,7 +37,7 @@ class Model:
 		self.agent_to_coordinate = dict()
 		self.coordinate_to_agent = dict()
 
-		# rd.seed(13)
+		# rd.seed(25)
 
 		for i in range(self.n):
 			coordinate = random_coordinate(self.dimension)
@@ -55,7 +56,7 @@ class Model:
 	def run(self, prob_agent_jump):
 		self.prob_agent_jump = prob_agent_jump
 		infected_over_time = list()
-		# k = 0
+
 		while len(self.infected) > 0:
 			infected_over_time.append(len(self.infected))
 			self.__infect()
@@ -82,31 +83,55 @@ class Model:
 			self.__recover()
 			self.__move()
 
-			if img_cnt == 10:
-				break
-
 		os.system("ffmpeg -f image2 -r 10 -i animation/%03d.png -vcodec mpeg4 -vb 40M -y ./disease_spreading.mp4")
 		os.system("rm -r animation")
-
 
 
 	def distance_simulation(self, prob_agent_jump):
 		self.prob_agent_jump = prob_agent_jump
 
-		duration = 1/prob_agent_jump
-		adjacency_matrix = np.zeros((np.n, np.n))
-		
+		duration = int(1/self.prob_recovery)
+
+		adjacency_matrix = np.zeros((self.n, self.n))
+		self.__update_adjacency_matrix(adjacency_matrix)
+
 		for i in range(duration):
+			self.__move()
+			self.__update_adjacency_matrix(adjacency_matrix)
 
+		graph = nx.Graph(adjacency_matrix)
+		number_components = nx.number_connected_components(graph)
 
+		distance = 0
+		clustering = 0
+		for comp in nx.connected_components(graph):
+			temp = graph.subgraph(comp)
+			distance += nx.average_shortest_path_length(temp)
+			clustering += nx.average_clustering(temp)
 
+		distance /= number_components
+		clustering /= number_components
 
+		return distance, clustering
 
+	def __update_adjacency_matrix(self, adjacency_matrix):
+		adj_cells = [[-1,-1], [0,-1], [1,-1], [1,0], [1,1], [0,1], [-1,1], [-1,0], [0, 0]]
 
+		for i in range(self.dimension):
+			for j in range(self.dimension):
+				if (i,j) in self.coordinate_to_agent:
+					cel_agents = self.coordinate_to_agent[(i,j)]
 
+					for agent in cel_agents:
+						for neighbors in adj_cells: 
+							neighbor_pos = (i+neighbors[0], j+neighbors[1])
+							if is_inside(neighbor_pos, self.dimension) and neighbor_pos in self.coordinate_to_agent: 
+								neighbors_in_adj_cell = self.coordinate_to_agent[neighbor_pos]
 
+								for neighbor in neighbors_in_adj_cell:
+									adjacency_matrix[agent][neighbor] = 1
 
-
+		return adjacency_matrix
 
 	def __draw(self, filename):
 		infected = list()
@@ -172,30 +197,24 @@ class Model:
 				self.infected.remove(agent)
 
 	def __infect(self):
-		# print("Infecting...")
 		infected = list(self.infected)
 		
 		for agent in infected:
 			coordinate = self.agent_to_coordinate[agent]
 			discrete_coordinate = coordinate_floor(coordinate)
 
-			# print(agent, coordinate, discrete_coordinate)
-
 			moves = [[-1,-1], [0,-1], [1,-1], [1,0], [1,1], [0,1], [-1,1], [-1,0], [0, 0]]
 
 			for move in moves:
 				position = tuple([discrete_coordinate[0] + move[0], discrete_coordinate[1] + move[1]])
-				# print(position, end=": ")
 
 				if is_inside(position, self.dimension) and position in self.coordinate_to_agent:
 					for neighbor in self.coordinate_to_agent[position]:
-						# print(neighbor, end=' ')
 						neighbor_pos = self.agent_to_coordinate[neighbor]
 						if rd.uniform(0,1) <= self.prob_infection and neighbor not in self.recovered:
 							if agent_distance(coordinate, neighbor_pos) <= self.radius:
 								self.infected.add(neighbor)
-					# print()
-		# print()
+
 
 	def __move(self):
 		for agent, agent_pos in self.agent_to_coordinate.items():

@@ -44,4 +44,31 @@ def disease_spreading_over_time(model, n_simulations, prob_agent_jump, folder=No
 	return average
 
 def distance_and_clustering_average(model):
-	
+	prob_agent_jump = np.logspace(-6, 0, num=20)
+	distance_average = list()
+	clustering_average = list()
+
+	print("Distance and clustering analysis")
+	for prob in prob_agent_jump:
+		print("Agent Jump probability: %f" % prob)
+
+		distance = 0
+		clustering = 0
+
+		bar = progressbar.ProgressBar(maxval=10, widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
+		bar.start()
+
+		for i in range(10):
+			results = model.distance_simulation(prob)
+			distance += results[0]
+			clustering += results[1]
+
+			bar.update(i+1)
+
+		bar.finish()
+
+		distance_average.append(distance/10)
+		clustering_average.append(clustering/10)
+
+	print(distance_average)
+	print(clustering_average)
